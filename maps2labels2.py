@@ -1,5 +1,5 @@
 import os
-#os.chdir('/home/phani/Data/caffe/examples/FCN')
+os.chdir('/home/phani/Data/caffe/examples/FCN')
 
 os.getcwd() 
 import glob
@@ -105,4 +105,6 @@ Contours_AD = Contours_AD[:,120:651,:]
 
 import scipy.io as sio
 sio.savemat('Data.mat', {'Images': Images, 'Label': Labels, 'Contour': Contours, 'Label_AN': Labels_AN, 'Contour_AN': Contours_AN, 'Label_AD': Labels_AD, 'Contour_AD': Contours_AD})
+import matplotlib.pyplot as plt
+imgplot = plt.imshow(Contours[:,:,0])    
 

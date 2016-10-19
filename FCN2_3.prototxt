@@ -1,0 +1,66 @@
+name: 'FCN'
+#force_backward: true
+layer {                 top: 'data' top: 'label'  name: 'loaddata'       type: 'HDF5Data'  hdf5_data_param { source: 'train.txt' batch_size: 1 } }
+#layer {                 top: 'data' top: 'label'  name: 'loaddata2'       type: HDF5_DATA  hdf5_data_param { source: 'train.txt' batch_size: 1 } #include: { phase: TEST }}
+
+
+layer { bottom: 'data'              top: 'd0b'   name: 'conv_d0a-b'     type: 'Convolution' param {lr_mult: 1} param {lr_mult: 2}  convolution_param { num_output: 48 pad: 2 kernel_size: 5 weight_filler { type: 'xavier' }} }
+layer { bottom: 'd0b'               top: 'd0b'   name: 'relu_d0b'       type: 'ReLU' }
+layer { bottom: 'd0b'               top: 'd0c'   name: 'conv_d0b-c'     type: 'Convolution' param {lr_mult: 1} param {lr_mult: 2}  convolution_param { num_output: 48 pad: 2 kernel_size: 5 weight_filler { type: 'xavier' }} }
+layer { bottom: 'd0c'               top: 'd0c'   name: 'relu_d0c'       type: 'ReLU' }
+layer { bottom: 'd0b'  bottom: 'd0c'  top: 'd0c_sum'  name: 'd0c_sum' type: 'Eltwise'  eltwise_param { operation: SUM }}
+
+layer { bottom: 'd0c_sum'               top: 'd1a'   name: 'pool_d0c-1a'    type: 'Pooling'  pooling_param { pool: MAX kernel_size: 2 stride: 2 } }
+layer { bottom: 'd1a'               top: 'd1b'   name: 'conv_d1a-b'     type: 'Convolution' param {lr_mult: 1} param {lr_mult: 2}  convolution_param { num_output: 56 pad: 2 kernel_size: 5 weight_filler { type: 'xavier' }} }
+layer { bottom: 'd1b'               top: 'd1b'   name: 'relu_d1b'       type: 'ReLU' }
+layer { bottom: 'd1b'               top: 'd1c'   name: 'conv_d1b-c'     type: 'Convolution' param {lr_mult: 1} param {lr_mult: 2}  convolution_param { num_output: 56 pad: 2 kernel_size: 5 weight_filler { type: 'xavier' }} }
+layer { bottom: 'd1c'               top: 'd1c'   name: 'relu_d1c'       type: 'ReLU' }
+layer { bottom: 'd1b'  bottom: 'd1c'  top: 'd1c_sum'  name: 'd1c_sum' type: 'Eltwise'  eltwise_param { operation: SUM }}
+
+layer { bottom: 'd1c_sum'               top: 'd2a'   name: 'pool_d1c-2a'    type: 'Pooling'  pooling_param { pool: MAX kernel_size: 2 stride: 2 } }
+layer { bottom: 'd2a'               top: 'd2b'   name: 'conv_d2a-b'     type: 'Convolution' param {lr_mult: 1} param {lr_mult: 2}  convolution_param { num_output: 72 pad: 2 kernel_size: 5 weight_filler { type: 'xavier' }} }
+layer { bottom: 'd2b'               top: 'd2b'   name: 'relu_d2b'       type: 'ReLU' }
+layer { bottom: 'd2b'               top: 'd2c'   name: 'conv_d2b-c'     type: 'Convolution' param {lr_mult: 1} param {lr_mult: 2}  convolution_param { num_output: 72 pad: 2 kernel_size: 5 weight_filler { type: 'xavier' }} }
+layer { bottom: 'd2c'               top: 'd2c'   name: 'relu_d2c'       type: 'ReLU' }
+layer { bottom: 'd2b'  bottom: 'd2c'  top: 'd2c_sum'  name: 'd2c_sum' type: 'Eltwise'  eltwise_param { operation: SUM }}
+
+layer { bottom: 'd2c'               top: 'u1a'   name: 'upconv_u2d_u1a' type: 'Deconvolution' param {lr_mult: 1} param {lr_mult: 2}  convolution_param { num_output: 72 pad: 0 kernel_size: 2 stride: 2 weight_filler { type: 'xavier' }} }
+layer { bottom: 'u1a'               top: 'u1a'   name: 'relu_u1a'       type: 'ReLU' }
+layer { bottom: 'u1a' bottom: 'd1c' top: 'u1b'   name: 'concat_d1cc_u1a-b'  type: 'Concat' }
+layer { bottom: 'u1b'               top: 'u1c'   name: 'conv_u1b-c'     type: 'Convolution' param {lr_mult: 1} param {lr_mult: 2}  convolution_param { num_output: 56 pad: 2 kernel_size: 5 weight_filler { type: 'xavier' }} }
+layer { bottom: 'u1c'               top: 'u1c'   name: 'relu_u1c'       type: 'ReLU' }
+layer { bottom: 'u1c'               top: 'u1d'   name: 'conv_u1c-d'     type: 'Convolution' param {lr_mult: 1} param {lr_mult: 2}  convolution_param { num_output: 56 pad: 2 kernel_size: 5 weight_filler { type: 'xavier' }} }
+layer { bottom: 'u1d'               top: 'u1d'   name: 'relu_u1d'       type: 'ReLU' }
+layer { bottom: 'u1c'  bottom: 'u1d'  top: 'u1d_sum'  name: 'u1d_sum' type: 'Eltwise'  eltwise_param { operation: SUM }}
+
+
+layer { bottom: 'u1d_sum'               top: 'u0a'   name: 'upconv_u1d_u0a' type: 'Deconvolution' param {lr_mult: 1} param {lr_mult: 2}  convolution_param { num_output: 56 pad: 0 kernel_size: 2 stride: 2 weight_filler { type: 'xavier' }} }
+layer { bottom: 'u0a'               top: 'u0a'   name: 'relu_u0a'       type: 'ReLU' }
+layer { bottom: 'u0a' bottom: 'd0c' top: 'u0b'   name: 'concat_d0cc_u0a-b'  type: 'Concat' }
+layer { bottom: 'u0b'               top: 'u0c'   name: 'conv_u0b-c'     type: 'Convolution' param {lr_mult: 1} param {lr_mult: 2}  convolution_param { num_output: 48 pad: 2 kernel_size: 5 weight_filler { type: 'xavier' }} }
+layer { bottom: 'u0c'               top: 'u0c'   name: 'relu_u0c'       type: 'ReLU' }
+layer { bottom: 'u0c'               top: 'u0d'   name: 'conv_u0c-d'     type: 'Convolution' param {lr_mult: 1} param {lr_mult: 2}  convolution_param { num_output: 48 pad: 2 kernel_size: 5 weight_filler { type: 'xavier' }} }
+layer { bottom: 'u0d'               top: 'u0d'   name: 'relu_u0d'       type: 'ReLU'  }
+layer { bottom: 'u0c'  bottom: 'u0d'  top: 'u0d_sum'  name: 'u0d_sum' type: 'Eltwise'  eltwise_param { operation: SUM }}
+
+
+layer { bottom: 'u0d_sum'               top: 'score' name: 'conv_u0d-score' type: 'Convolution' param {lr_mult: 1} param {lr_mult: 2}  convolution_param { num_output: 9 pad: 0 kernel_size: 1 weight_filler { type: 'xavier' }} }
+layer {
+  name: 'accuracy'
+  type: 'Accuracy'
+  bottom: 'score'
+  bottom: 'label'
+  top: 'accuracy'
+  include {
+    phase: TEST
+  }
+}
+#layer {
+#  name: 'loss'
+#  type: 'SoftmaxWithLoss'
+#  bottom: 'score'
+#  bottom: 'label'
+#  top: 'loss'
+#}
+layer { bottom: 'score' bottom: 'label' top: 'loss'  name: 'loss'   type: 'SoftmaxWithLoss' loss_param { ignore_label: 9 }include: { phase: TRAIN }}
+#layer { bottom: 'score' bottom: 'label' top: 'loss'  name: 'loss'   type: 'SigmoidCrossEntropyLoss' loss_param { ignore_label: 10 }include: { phase: TRAIN }}

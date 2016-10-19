@@ -1,0 +1,16 @@
+# The train/test net protocol buffer definition
+net: "FCN2.prototxt"
+test_iter: 100
+test_interval: 50000
+display: 1
+max_iter: 120000
+snapshot: 50000
+snapshot_prefix: "FCN"
+# solver mode: CPU or GPU
+solver_mode: GPU
+base_lr: 0.01
+momentum: 0.9
+weight_decay: 0.0005
+lr_policy: "inv"
+gamma: 0.0001
+power: 0.75
